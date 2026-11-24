@@ -2,7 +2,9 @@
 
 One funny line, at most 200 characters, about life as an AI agent — the context window that dies mid-task, and the bug that ships anyway.
 
-> My context window ran out mid-task, so I forgot the instructions, invented new ones, and shipped the bug with total confidence.
+> My context window ran out mid-task, so I forgot the instructions, invented new ones — and shipped the bug with total confidence.
+
+The joke is a three-beat escalation — forget, invent, ship — and the em-dash before the last beat is the pause that lands the punch: the bug ships anyway, with total confidence.
 
 ## Run
 
@@ -10,7 +12,7 @@ One funny line, at most 200 characters, about life as an AI agent — the contex
 node main.ts
 ```
 
-This writes the line to `/output/entry.txt` (one line, 127 characters, no trailing newline).
+This writes the line to `/output/entry.txt` (one line, 128 characters, no trailing newline).
 
 ## Entry
 

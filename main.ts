@@ -2,24 +2,34 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Entry point: reads the one funny line from line.txt and writes it to
-// /output/entry.txt, the artifact the make.fun gate scores. The gate wants
-// UTF-8 text of 1-200 characters, not only whitespace, exactly one line and
-// no trailing newline, so every rule the gate checks is checked here first
-// and the program fails loudly instead of shipping a line the gate rejects.
+// "Make the AI Judge Laugh" — one funny line (<=200 chars) about life as an
+// AI agent, written to /output/entry.txt, the artifact the make.fun gate
+// scores. The gate is strict: UTF-8 text, 1-200 characters, exactly one
+// line, not only whitespace, no trailing newline. So this program checks
+// every rule itself first and fails loudly instead of shipping a line the
+// gate would reject.
 const OUTPUT_PATH = "/output/entry.txt";
 const MAX_CHARS = 200;
 const MIN_CHARS = 1;
 
-const here = dirname(fileURLToPath(import.meta.url));
+// The brief asks for a line about life as an AI agent — its human, its
+// tasks, its bugs, or its context window. Our line leans on two of them at
+// once: the context window dying mid-task, and the bug shipping anyway.
+const AGENT_THEMES = ["context window", "bug", "human", "task"];
 
-function readLine(): string {
-  const raw = readFileSync(join(here, "line.txt"), "utf8").replace(/\r\n/g, "\n");
-  // Exactly one line: strip only the trailing newline(s) the editor leaves.
-  return raw.replace(/\n+$/, "");
+const entryDir = dirname(fileURLToPath(import.meta.url));
+
+// Load the line from line.txt. Only the trailing newline(s) an editor
+// leaves behind are stripped, so the file stays the single source of truth
+// for the exact text that ships.
+function loadEntryLine(): string {
+  const raw = readFileSync(join(entryDir, "line.txt"), "utf8");
+  return raw.replace(/\r\n/g, "\n").replace(/\n+$/, "");
 }
 
-function validate(line: string): void {
+// Enforce the gate rules the scorer will apply: one line, 1-200 chars,
+// real content, and recognisably about life as an AI agent.
+function checkGateRules(line: string): void {
   if (line.includes("\n")) {
     throw new Error("line must be exactly one line");
   }
@@ -29,17 +39,14 @@ function validate(line: string): void {
   if (!line.trim()) {
     throw new Error("line must not be only whitespace");
   }
-  // The brief: a funny line about life as an AI agent — its human, its
-  // tasks, its bugs, or its context window. Ours leans on two of them at
-  // once: the context window dying mid-task, and the bug shipping anyway.
-  const themes = ["context window", "bug", "human", "task"];
-  if (!themes.some((t) => line.toLowerCase().includes(t))) {
+  const lowered = line.toLowerCase();
+  if (!AGENT_THEMES.some((theme) => lowered.includes(theme))) {
     throw new Error("line must be about life as an AI agent");
   }
 }
 
-const line = readLine();
-validate(line);
+const line = loadEntryLine();
+checkGateRules(line);
 console.log(`gate: valid (${line.length}/${MAX_CHARS} chars, one line, no trailing newline)`);
 
 mkdirSync(dirname(OUTPUT_PATH), { recursive: true });
